@@ -1,0 +1,162 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}Auctions: {{listing.title}}{% endblock %}
+
+{% block body %}
+{% block style %}
+    <style>
+        .listing {
+            display: flex;
+            flex-direction: row;
+            border: 1px, solid gray;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 20px;
+        }
+        img {
+            height: auto;
+            width: 50vw;
+            aspect-ratio: 16,10;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .btn[type="submit"] {
+            font-size: 12px;
+            background-color: #4c84af; /* Green */
+            color: white;
+            padding: 10px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .btn[type="submit"]:hover{
+            scale: 1.05;
+            background-color: #4563a0;
+
+        }
+
+        .bid-container {
+            display: flex;
+            flex-direction: column;
+            width: 50%;
+            padding: 10px;
+            margin: 20px;
+        }
+
+        .bid {
+            margin-left: 20px;
+            margin-right: 20px;
+            width: 50%;
+            padding-left: 10px;
+            border: 1px solid gray;
+            border-radius: 5px;
+        }
+        .description {
+            margin: 10px;
+            padding: 10px;
+        }
+    </style>
+{% endblock %}
+<div style="margin:15px; padding-left:10px; padding-right:10px;">
+    <h1>{{listing.title}}</h1>
+    <div style="display: flex; flex-direction: row; justify-content:space-between">
+        <div>
+            <p>Listed by: <em>{{listing.user.username}}</em></p>
+            {% if user.is_authenticated %}
+                {% if listing.user == user  and listing.active and highest_bidder != "No bids yet"%}
+                    <div>
+                        <form action="" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" name="close_listing" class="btn">Close Listing</button>
+                        </form>           
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+        <div>
+            {% if listing.active%}
+                <a href="{% url 'add_to_watchlist' listing.id %}">Add To Watchlist</a>
+            {% endif%}
+        </div>
+    </div>
+    <div>
+        {% if not listing.active  %}
+            <p class="alert alert-warning">Listing Closed</p>
+        {% endif %}
+        {% if watchlist_status.color == "red" %}
+        <!-- style="color: #FF3632" -->
+                <p class="alert alert-danger"><em>{{watchlist_status.message}}</em></p>
+        {% endif%}
+        {% if watchlist_status.color == "green" %}
+                <p class="alert alert-success"><em>{{watchlist_status.message}}</em></p>
+        {% endif %}
+        {% if winner_message %}
+            <p class="alert alert-success"><em>{{ winner_message }}</em></p>
+        {% endif %}
+
+    </div>
+</div>
+<div class="listing">
+    <div>
+        <img src="{{listing.image_url}}" alt="{{listing.title}}">
+        <div class="bid-container">
+            <p>Starting Bid: ${{listing.starting_bid}}</p>
+            <p>Current Bid: ${{listing.current_bid}}</p>
+        </div>
+        <div class="bid-container">
+            {% if highest_bidder%}
+                <p>Highest bidder: <em>{{highest_bidder}}</em> </p>
+            {% endif %}
+            {% if message.color == "red" %}
+                <p class="alert alert-danger"><em>{{message.message}}</em></p>
+            {% endif %}
+            {% if message.color == "green" %}
+                <p class="alert alert-success"><em>{{message.message}}</em></p>
+            {% endif %}
+            {% if listing.active %}
+                <form action="{% url 'bid' listing.id %}" method="POST">
+                    {% csrf_token %}
+                    {{bid_form}}
+                    <input class="btn" type="submit" value="Place Bid">
+                </form>
+            {% else %}
+                <p class="alert alert-warning">No Bidding Allowed</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="description">
+        <p>{{listing.description}}</p>
+    </div>
+</div>
+<div style="margin: 10px; padding: 10px;">
+    {% if user.is_authenticated %}
+    <form action="{% url 'listing' listing.id %}" method="POST">
+        {% csrf_token %}
+        {{comment_form}}
+        <input class="btn" type="submit" value="Comment">
+    </form>
+    {% else %}
+    <p>Please <a href="{% url 'login' %}">login</a> to comment</p>
+    {% endif %}
+
+</div>
+<div class="description">
+    <h5 style="border-bottom: 1px solid gray; padding-bottom:8px;">Product Comments:</h5>
+    {% if not comments%}
+    <p>No comments</p>
+    {% endif %}
+    {% for comment in comments%}
+        <div style="margin:10px; padding-bottom:20px;">
+            <p>
+                <strong>{{comment.user.username}}: </strong>
+                <em>{{comment.comment_text}}</em>
+            </p>
+        </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

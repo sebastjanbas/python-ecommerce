@@ -1,0 +1,48 @@
+{% extends "auctions/layout.html" %}
+
+{% block style %}
+    <style>
+        .listing {
+            display: flex;
+            flex-direction: row;
+            border: 1px, solid gray;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 20px;
+        }
+        img {
+            height: auto;
+            width: 50vw;
+            aspect-ratio: 16,10;
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+{% endblock %}
+{% block body %}
+    <h2>Your Watchlist</h2>
+    <p>You have {{ listings|length }} items in your watchlist.</p>
+    {% for listing in listings %}
+        <div class="listing">
+            <div style="width:50wv">    
+                {% if listing.image_url %}
+                    <img src="{{listing.image_url}}" alt="{{listing.title}}">
+                {% else %}
+                    <img src="https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg" alt="No photo">
+                {% endif %}
+            </div>
+            <div>
+                <h3><a href="{% url 'listing' listing.id %}">{{ listing.title }}</a></h3>
+                <p>{{ listing.description }}</p>
+                 <div style="display: flex; flex-direction:row; justify-content: space-between; margin-right:10px;">
+                    <div>
+                        <p>Current Bid: ${{ listing.current_bid }}</p>
+                    </div>
+                    <div style="text-align: left;">
+                        <a href="{% url 'remove_from_watchlist' listing.id %}">Remove From Watchlist</a>
+                    </div>
+                 </div>
+            </div>
+        </div>
+        {% endfor %}
+{% endblock %}
